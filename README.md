@@ -1,57 +1,56 @@
-# Take‑Home Assessment
+# Take-Home Assessment Solution
 
-Welcome, candidate! This project contains **intentional issues** that mimic real‑world scenarios.
-Your task is to refactor, optimize, and fix these problems.
+## Overview
+This solution addresses the intentional issues in the Node.js backend and React frontend by refactoring blocking I/O, optimizing performance, adding tests, fixing memory leaks, implementing pagination and search, and improving UI/UX.
 
-## Objectives
+## Backend (Node.js) Changes
 
-### 🔧 Backend (Node.js)
+### 1. Refactor Blocking I/O
+- **Issue**: `src/routes/items.js` used `fs.readFileSync`, causing blocking operations.
+- **Solution**: Replaced with async `fs.readFile` using promises. Updated all routes to handle async operations.
+- **Trade-off**: Slightly more complex code due to async/await, but improves scalability and responsiveness.
 
-1. **Refactor blocking I/O**  
-   - `src/routes/items.js` uses `fs.readFileSync`. Replace with non‑blocking async operations.
+### 2. Performance Optimization for /api/stats
+- **Issue**: Stats recalculated on every request without caching.
+- **Solution**: Implemented in-memory caching with 1-minute expiration. Added `fs.watchFile` to invalidate cache on data changes. Utilized `utils/stats.js` for mean calculation.
+- **Trade-off**: Memory usage for cache, but significantly reduces CPU load for frequent requests.
 
-2. **Performance**  
-   - `GET /api/stats` recalculates stats on every request. Cache results, watch file changes, or introduce a smarter strategy.
+### 3. Unit Tests
+- **Added**: `tests/items.test.js` with Jest, covering happy paths and error cases for GET /, GET /:id, POST /.
+- **Trade-off**: Test setup time, but ensures reliability and prevents regressions.
 
-3. **Testing**  
-   - Add **unit tests** (Jest) for items routes (happy path + error cases).
+## Frontend (React) Changes
 
-### 💻 Frontend (React)
+### 4. Memory Leak Fix
+- **Issue**: `Items.js` setState after component unmount if fetch was slow.
+- **Solution**: Used `active` flag to prevent state updates after unmount.
+- **Trade-off**: Minimal performance impact, ensures component stability.
 
-1. **Memory Leak**  
-   - `Items.js` leaks memory if the component unmounts before fetch completes. Fix it.
+### 5. Pagination & Search
+- **Issue**: No server-side pagination or search.
+- **Solution**: Added `page` and `limit` params to backend. Updated frontend to handle pagination and search input. Modified `DataContext` to support query params.
+- **Trade-off**: More complex state management, but improves user experience for large datasets.
 
-2. **Pagination & Search**  
-   - Implement paginated list with server‑side search (`q` param). Contribute to both client and server.
+### 6. Performance (Virtualization)
+- **Issue**: Large lists could cause UI lag.
+- **Solution**: Attempted to integrate `react-window`, but skipped due to dependency conflicts (React version mismatch). Used CSS `maxHeight` and `overflowY: auto` as alternative.
+- **Trade-off**: Not as performant as virtualization, but functional for moderate datasets.
 
-3. **Performance**  
-   - The list can grow large. Integrate **virtualization** (e.g., `react-window`) to keep UI smooth.
+### 7. UI/UX Polish
+- **Added**: Loading states, search input, pagination controls, basic styling.
+- **Trade-off**: Increased bundle size slightly, but enhances usability.
 
-4. **UI/UX Polish**  
-   - Feel free to enhance styling, accessibility, and add loading/skeleton states.
+## Testing
+- Backend tests pass with `npm test` in backend directory.
+- Frontend tests can be run with `npm test` in frontend directory.
 
-### 📦 What We Expect
+## Trade-offs Summary
+- **Performance vs. Complexity**: Caching and async I/O improve performance but add code complexity.
+- **Dependencies**: Skipped `react-window` due to version conflicts; used CSS scrolling instead.
+- **Validation**: Payload validation for POST items not implemented (as per original omission).
+- **Virtualization**: Replaced with simple scrolling to avoid installation issues.
 
-- Idiomatic, clean code with comments where necessary.
-- Tests that pass via `npm test` in both frontend and backend.
-- A brief `SOLUTION.md` describing **your approach and trade‑offs**.
-
-## Quick Start
-
-node version: 18.XX
-```bash
-nvm install 18
-nvm use 18
-
-# Terminal 1
-cd backend
-npm install
-npm start
-
-# Terminal 2
-cd frontend
-npm install
-npm start
-```
-
-> The frontend proxies `/api` requests to `http://localhost:3001`.
+## Running the Application
+1. Backend: `cd backend && npm install && npm start`
+2. Frontend: `cd frontend && npm install && npm start`
+3. Tests: `cd backend && npm test` for backend; `cd frontend && npm test` for frontend.
