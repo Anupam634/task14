@@ -5,10 +5,12 @@ const DataContext = createContext();
 export function DataProvider({ children }) {
   const [items, setItems] = useState([]);
 
-  const fetchItems = useCallback(async () => {
-    const res = await fetch('http://localhost:3001/api/items?limit=500'); // Intentional bug: backend ignores limit
+  const fetchItems = useCallback(async ({ q = '', page = 1, limit = 10 } = {}) => {
+    const params = new URLSearchParams({ q, page: page.toString(), limit: limit.toString() });
+    const res = await fetch(`http://localhost:3001/api/items?${params}`);
     const json = await res.json();
-    setItems(json);
+    setItems(json.items);
+    return { total: json.total, items: json.items };
   }, []);
 
   return (
